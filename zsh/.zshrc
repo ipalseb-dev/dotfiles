@@ -91,3 +91,7 @@ alias dcl="docker compose logs -f"
 
 # VS Code
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
+# ─── Config local de la máquina (fuera del repo) ─────────
+# Rutas, alias y variables que solo valen en este Mac: ~/.zshrc.local
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

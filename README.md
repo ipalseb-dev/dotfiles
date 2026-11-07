@@ -11,7 +11,7 @@ My macOS development environment — Kanagawa-themed, keyboard-driven, minimal n
 | **Ghostty** | `config` | Kanagawa Wave colors, JetBrains Mono, quick terminal (Cmd+`) |
 | **Neovim** | `init.lua` | Kanagawa theme, Treesitter, Comment.nvim — minimal for quick edits |
 | **VS Code** | `settings.json` | Prettier + ESLint on save, Tailwind class sorting, Kanagawa theme, zero noise |
-| **Obsidian** | `app.json`, `appearance.json`, plugins, hotkeys, snippets | JetBrains Mono, custom Kanagawa CSS, Dataview, Kanban |
+| **Obsidian** | `app.json`, `appearance.json`, plugins, hotkeys, snippets | JetBrains Mono, custom Kanagawa CSS, Dataview |
 | **Herdr** | `herdr/` layout, mods, theme, keys | Agent board: every Claude Code session as a live card, ⌘1–9 to jump, ⌘K to open one (optionally on a Pulse task or in a new git worktree), Claude's status line moved to a footer |
 | **Homebrew** | `Brewfile` | CLI tools, languages, databases, apps, VS Code extensions |
 | **macOS** | `macos.sh` | Dock, Finder, keyboard, trackpad, screenshots — one-time setup |
@@ -22,6 +22,11 @@ My macOS development environment — Kanagawa-themed, keyboard-driven, minimal n
 dotfiles/
 ├── ghostty/config
 ├── git/.gitignore_global
+├── herdr/
+│   ├── layouts/tablero.json
+│   ├── mods/tablero*/       # board, top bar, ⌘K picker, footer
+│   ├── themes/kanagawa.json
+│   └── keys.json
 ├── nvim/init.lua
 ├── obsidian/
 │   ├── app.json
@@ -32,7 +37,7 @@ dotfiles/
 │   └── snippets/kanagawa.css
 ├── vscode/settings.json
 ├── zsh/.zshrc
-├── zsh/.p10k.zsh
+├── zsh/.p10k.zsh          # machine-only settings go in ~/.zshrc.local (not versioned)
 ├── Brewfile
 ├── install.sh
 └── macos.sh
@@ -80,6 +85,8 @@ A layout for [Herdr](https://herdr.dev) built for running several coding agents 
 - **Moving around**: `⌘1–9` jumps to a session, `⌃Tab` cycles, `⌘J` goes to the next one waiting on you, `⌘0` back to the board.
 - **New session** (`⌘K`): pinned folders, then every folder in your projects dir. If the repo has tasks in a Pulse MCP server, pick one and Claude starts with it; if the repo already has a session, start the new one in its own git worktree.
 - **Footer**: Claude Code's status line (folder, branch, model, context, 5-hour quota) shown by Herdr instead of inside Claude.
+
+Herdr has no Homebrew cask: download it from [herdr.dev](https://herdr.dev), then run `install.sh` to link the board. `jq` must be available for the footer script.
 
 Personal settings live outside the repo, in `~/.config/herdr-app/data/tablero.json`:
 
