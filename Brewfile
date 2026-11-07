@@ -9,11 +9,9 @@ brew "git"
 brew "gh"
 brew "fzf"
 brew "tree"
-brew "vim"
 brew "neovim"
 brew "zsh"
 brew "zsh-syntax-highlighting"
-brew "p7zip"
 
 # ─── Languages & runtimes ────────────────────────────────
 
@@ -27,6 +25,11 @@ brew "pipx"
 brew "php@8.4", link: true
 brew "composer"
 brew "openjdk@11"
+brew "openjdk@17"
+brew "openjdk@21"
+brew "openjdk@25"
+brew "maven"
+brew "uv"
 
 # ─── Databases ────────────────────────────────────────────
 
@@ -43,12 +46,19 @@ brew "docker-compose"
 brew "azure-cli"
 brew "helm"
 brew "minio/stable/mc"
+brew "rclone"
+brew "sshpass"
+brew "pmd"
 
 # ─── Media & tools ───────────────────────────────────────
 
 brew "ffmpeg"
 brew "whisper-cpp"
-brew "swagger-codegen"
+brew "yt-dlp"
+brew "poppler"
+brew "ghostscript"
+brew "librsvg"
+brew "unar"
 
 # ─── Apps ─────────────────────────────────────────────────
 
@@ -68,13 +78,11 @@ cask "slack"
 cask "notion"
 cask "bruno"
 cask "dbeaver-community"
-cask "sourcetree"
 cask "obs"
 cask "vlc"
 cask "rectangle"
 cask "monitorcontrol"
 cask "the-unarchiver"
-cask "rar"
 cask "protonvpn"
 cask "proton-pass"
 cask "applite"
@@ -82,6 +90,8 @@ cask "keyclu"
 cask "font-jetbrains-mono"
 cask "gcloud-cli"
 cask "openlens"
+cask "intellij-idea-ce"
+cask "reminders-menubar"
 
 # ─── VS Code extensions ─────────────────────────────────
 
@@ -119,3 +129,15 @@ vscode "bmewburn.vscode-intelephense-client"
 vscode "shufo.vscode-blade-formatter"
 vscode "shopify.theme-check-vscode"
 vscode "lokalise.i18n-ally"
+vscode "shd101wyy.markdown-preview-enhanced"
+vscode "rvest.vs-code-prettier-eslint"
+vscode "github.copilot"
+vscode "github.copilot-chat"
+vscode "openai.openai-chatgpt-adhoc"
+vscode "redhat.java"
+vscode "vscjava.vscode-java-pack"
+vscode "vscjava.vscode-java-debug"
+vscode "vscjava.vscode-java-dependency"
+vscode "vscjava.vscode-java-test"
+vscode "vscjava.vscode-maven"
+vscode "vscjava.vscode-gradle"
