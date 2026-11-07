@@ -12,6 +12,7 @@ My macOS development environment — Kanagawa-themed, keyboard-driven, minimal n
 | **Neovim** | `init.lua` | Kanagawa theme, Treesitter, Comment.nvim — minimal for quick edits |
 | **VS Code** | `settings.json` | Prettier + ESLint on save, Tailwind class sorting, Kanagawa theme, zero noise |
 | **Obsidian** | `app.json`, `appearance.json`, plugins, hotkeys, snippets | JetBrains Mono, custom Kanagawa CSS, Dataview, Kanban |
+| **Herdr** | `herdr/` layout, mods, theme, keys | Agent board: every Claude Code session as a live card, ⌘1–9 to jump, ⌘K to open one (optionally on a Pulse task or in a new git worktree), Claude's status line moved to a footer |
 | **Homebrew** | `Brewfile` | CLI tools, languages, databases, apps, VS Code extensions |
 | **macOS** | `macos.sh` | Dock, Finder, keyboard, trackpad, screenshots — one-time setup |
 
@@ -70,3 +71,24 @@ Everything runs on [Kanagawa](https://github.com/rebelot/kanagawa.nvim) — term
 ## License
 
 MIT
+
+## Herdr board
+
+A layout for [Herdr](https://herdr.dev) built for running several coding agents at once:
+
+- **Board**: every open session as an equal card with its state (waiting on you, working, done, idle), git branch, context usage and the last lines of its terminal. A warning shows when two sessions share a folder.
+- **Moving around**: `⌘1–9` jumps to a session, `⌃Tab` cycles, `⌘J` goes to the next one waiting on you, `⌘0` back to the board.
+- **New session** (`⌘K`): pinned folders, then every folder in your projects dir. If the repo has tasks in a Pulse MCP server, pick one and Claude starts with it; if the repo already has a session, start the new one in its own git worktree.
+- **Footer**: Claude Code's status line (folder, branch, model, context, 5-hour quota) shown by Herdr instead of inside Claude.
+
+Personal settings live outside the repo, in `~/.config/herdr-app/data/tablero.json`:
+
+```json
+{ "projectsDir": "~/Projects", "pinned": [{ "name": "Notes", "folder": "~/notes" }] }
+```
+
+To send Claude Code's status line to the footer, add this near the top of your own statusline script (after reading stdin into `$INPUT`):
+
+```bash
+[ -n "$HC_TERMINAL_ID" ] && { echo "$INPUT" | bash ~/.config/herdr-app/mods/tablero-pie/claude-statusline.sh; exit 0; }
+```

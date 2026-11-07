@@ -56,6 +56,18 @@ VSCODE_DIR="$HOME/Library/Application Support/Code/User"
 mkdir -p "$VSCODE_DIR"
 backup_and_link "$DOTFILES/vscode/settings.json" "$VSCODE_DIR/settings.json"
 
+# ─── Herdr (agent board) ──────────────────────────────────
+
+info "Setting up Herdr board..."
+HERDR_DIR="$HOME/.config/herdr-app"
+mkdir -p "$HERDR_DIR/mods" "$HERDR_DIR/layouts" "$HERDR_DIR/themes"
+for mod in tablero tablero-foco tablero-ir tablero-pie; do
+  backup_and_link "$DOTFILES/herdr/mods/$mod" "$HERDR_DIR/mods/$mod"
+done
+backup_and_link "$DOTFILES/herdr/layouts/tablero.json" "$HERDR_DIR/layouts/tablero.json"
+backup_and_link "$DOTFILES/herdr/themes/kanagawa.json" "$HERDR_DIR/themes/kanagawa.json"
+backup_and_link "$DOTFILES/herdr/keys.json" "$HERDR_DIR/keys.json"
+
 # ─── Obsidian (copy, not symlink) ─────────────────────────
 
 if [ -d "$OBSIDIAN_VAULT" ]; then

@@ -1,0 +1,75 @@
+{
+  "id": "root",
+  "type": "column",
+  "theme": "kanagawa",
+  "font": "JetBrains Mono",
+  "font_size": 14,
+  "ui_font": "Geist",
+  "terminal_padding": [
+    4,
+    4
+  ],
+  "background": "#16161d",
+  "children": [
+    {
+      "id": "barra",
+      "type": "block",
+      "size": {
+        "px": 42
+      },
+      "content": {
+        "mod": "tablero-foco"
+      }
+    },
+    {
+      "id": "vista",
+      "type": "stack",
+      "active": "grid",
+      "children": [
+        {
+          "id": "grid",
+          "type": "block",
+          "content": {
+            "mod": "tablero"
+          }
+        },
+        {
+          "id": "foco",
+          "type": "column",
+          "children": [
+            {
+              "type": "block",
+              "padding": 6,
+              "content": {
+                "tab": "active",
+                "pane": {
+                  "gap": 6,
+                  "radius": 6,
+                  "border": {
+                    "width": 1,
+                    "color": "border"
+                  },
+                  "focus": {
+                    "width": 1,
+                    "color": "accent"
+                  }
+                }
+              },
+              "id": "foco-main"
+            },
+            {
+              "id": "pie",
+              "type": "block",
+              "size": {
+                "px": 30
+              },
+              "content": {
+                "mod": "tablero-pie"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
