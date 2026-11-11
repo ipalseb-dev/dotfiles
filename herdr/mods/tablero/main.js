@@ -2,7 +2,7 @@
 // Clic en una tarjeta → se abre a pantalla completa (stack "vista" → "foco").
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { hc, run, theme, settings, home, readTextFile } from "herdr";
+import { hc, run, theme, settings, home, readTextFile, layout } from "herdr";
 import { sessions, open, ago, color, label, askClose, LABEL } from "./sessions.js";
 
 const CARD_W = 380;
@@ -34,6 +34,11 @@ function hints(t, items) {
       .child(div().child(what))));
 }
 
+// Solo trabaja cuando se ve: cada redibujo de un mod redibuja la ventana entera,
+// también la terminal en la que se está escribiendo.
+const find = (n, id) => (n?.id === id ? n : (n?.children ?? []).map((c) => find(c, id)).find(Boolean) ?? null);
+const visible = () => (find(layout(), "vista")?.active ?? "grid") === "grid";
+
 export default class Tablero extends View {
   init(_props, cx) {
     this.preview = {};
@@ -44,8 +49,9 @@ export default class Tablero extends View {
   }
 
   refresh(cx) {
-    if (this.busy) return;
+    if (this.busy || !visible()) return;
     this.busy = true;
+    const before = JSON.stringify([this.preview, this.st]);
     cx.spawn(async (cx) => {
       try {
         for (const s of sessions()) {
@@ -58,7 +64,7 @@ export default class Tablero extends View {
       } finally {
         this.busy = false;
       }
-      cx.notify();
+      if (JSON.stringify([this.preview, this.st]) !== before) cx.notify();
     });
   }
 

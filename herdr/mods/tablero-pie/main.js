@@ -7,18 +7,20 @@ import { theme, focused, home, readTextFile } from "herdr";
 export default class Pie extends View {
   init(_props, cx) {
     this.data = {};
+    this.raw = {};
     this.read(cx);
-    cx.timer.every(1500, (cx) => this.read(cx));
+    cx.timer.every(2000, (cx) => this.read(cx));
   }
 
   read(cx) {
     const t = focused()?.terminal;
     if (!t) return;
     cx.spawn(async (cx) => {
-      try {
-        const txt = await readTextFile(`${home()}/.config/herdr-app/data/tablero-status/${t}.json`);
-        this.data[t] = JSON.parse(txt);
-      } catch { this.data[t] = null; }
+      let txt = null;
+      try { txt = await readTextFile(`${home()}/.config/herdr-app/data/tablero-status/${t}.json`); } catch {}
+      if (txt === this.raw[t]) return;
+      this.raw[t] = txt;
+      try { this.data[t] = txt ? JSON.parse(txt) : null; } catch { this.data[t] = null; }
       cx.notify();
     });
   }
