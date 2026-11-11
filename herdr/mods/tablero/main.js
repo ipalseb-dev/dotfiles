@@ -5,9 +5,10 @@ import { v_flex, h_flex } from "gpui-base";
 import { hc, run, theme, settings, home, readTextFile, layout } from "herdr";
 import { sessions, open, ago, color, label, askClose, LABEL } from "./sessions.js";
 
-const CARD_W = 380;
-const CARD_H = 210;
-const LINES = 9;
+// Tarjetas que llenan el espacio: columnas de al menos MIN_W y alto repartido entre las filas
+// (entre MIN_H y MAX_H). Más alto = más líneas de la terminal a la vista.
+const MIN_W = 460, MIN_H = 280, MAX_H = 1400, GAP = 14, LINE_H = 18;
+const LINES = 40;
 
 // Lo útil de una pantalla de Claude Code está encima de la caja de entrada.
 function tail(text) {
@@ -44,6 +45,7 @@ export default class Tablero extends View {
     this.preview = {};
     this.st = {};
     this.width = 1200;
+    this.height = 800;
     this.refresh(cx);
     cx.timer.every(2500, (cx) => this.refresh(cx));
   }
@@ -73,7 +75,7 @@ export default class Tablero extends View {
     const waiting = s.status === "blocked";
     return v_flex()
       .id(`card-${s.key}`)
-      .w(CARD_W).h(CARD_H).flex_none()
+      .w(this.cw).h(this.ch).flex_none()
       .rounded(10).border(waiting ? 2 : 1).border_color(waiting ? c : t.border)
       .bg(t.background).overflow_hidden()
       .hover((st) => st.border_color(t.accent))
@@ -87,12 +89,12 @@ export default class Tablero extends View {
           .child(div().text_size(12).text_color(t.dim).child(s.status ? ago(s.since) : ""))
           .child(closeBtn(`x-${s.key}`, s, t)))
       .child(
-        div().px(12).pb(6).text_size(14).font_semibold().text_color(t.foreground).truncate()
+        div().px(12).pb(6).text_size(15).font_semibold().text_color(t.foreground).truncate()
           .child(label(s)))
       .child(this.meta(s, t, all))
       .child(
-        v_flex().px(12).pb(10).flex_1().overflow_hidden().font_family(mono).text_size(11).text_color(t.muted)
-          .children((this.preview[s.terminal] ?? ["…"]).map((l, i) => div().id(`l-${s.key}-${i}`).truncate().child(l || " "))));
+        v_flex().px(12).pb(10).flex_1().overflow_hidden().font_family(mono).text_size(12).text_color(t.muted)
+          .children((this.preview[s.terminal] ?? ["…"]).slice(-this.lines).map((l, i) => div().id(`l-${s.key}-${i}`).truncate().child(l || " "))));
   }
 
   // Rama, contexto y aviso si otra sesión trabaja en la misma carpeta (se pisarían).
@@ -112,7 +114,7 @@ export default class Tablero extends View {
   }
 
   addCard(t) {
-    return v_flex().id("add").w(CARD_W).h(CARD_H).flex_none().rounded(10).border(1).border_color(t.border)
+    return v_flex().id("add").w(this.cw).h(this.ch).flex_none().rounded(10).border(1).border_color(t.border)
       .items_center().justify_center().gap(6).text_color(t.dim)
       .hover((st) => st.border_color(t.accent).text_color(t.foreground))
       .on_click(() => run("mod.open", { name: "tablero-ir" }))
@@ -130,14 +132,19 @@ export default class Tablero extends View {
     const all = sessions();
     const agents = all;
     const waiting = agents.filter((s) => s.status === "blocked").length;
-    const cols = Math.max(1, Math.floor((this.width - 32 + 14) / (CARD_W + 14)));
+    const inner = this.width - 32;
+    const cols = Math.max(1, Math.min(Math.floor((inner + GAP) / (MIN_W + GAP)), agents.length + 1));
+    this.cw = Math.floor((inner - GAP * (cols - 1)) / cols);
+    const nrows = Math.ceil((agents.length + 1) / cols);
+    this.ch = Math.max(MIN_H, Math.min(MAX_H, Math.floor((this.height - 32 - 50 - GAP * (nrows - 1)) / nrows)));
+    this.lines = Math.max(6, Math.floor((this.ch - 110) / LINE_H));
     const rows = [];
     const cards = [...agents, null];
     for (let i = 0; i < cards.length; i += cols) rows.push(cards.slice(i, i + cols));
 
     return v_flex()
       .id("root").size_full().bg(t.canvas).p(16).gap(14).overflow_y_scrollbar()
-      .on_size_change((size, cx) => { this.width = size.width; cx.notify(); })
+      .on_size_change((size, cx) => { this.width = size.width; this.height = size.height; cx.notify(); })
       .child(
         h_flex().gap(12).items_center()
           .child(div().text_size(18).font_semibold().text_color(t.foreground).child("Tablero"))
