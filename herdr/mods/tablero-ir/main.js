@@ -1,7 +1,7 @@
 // ⌘K: ir a una sesión abierta o abrir una nueva.
 // Paso 1: sesión abierta o carpeta. Paso 2 (solo si aporta): tarea de Pulse y dónde (misma carpeta / worktree).
 import { View, div } from "gpui-kit";
-import { v_flex, h_flex, InputState, Input, ScrollHandle } from "gpui-base";
+import { v_flex, h_flex, ScrollHandle } from "gpui-base";
 import { run, theme, spaces, props, closeOverlay, pickFolder, notify } from "herdr";
 import { sessions, open, color, label, LABEL } from "./sessions.js";
 import { loadProjects, named, sorted } from "./projects.js";
@@ -16,7 +16,9 @@ export default class TableroIr extends View {
   init(_props, cx) {
     this.filter = "";
     this.at = 0;
-    this.handle = cx.focus_handle();   // las flechas y Tab llegan al contenedor aunque escribas en el campo
+    // Sin campo de texto: un Input se queda ↑/↓ para mover su cursor y la lista nunca los recibía.
+    // El foco lo tiene el contenedor y lo que se escribe se recoge tecla a tecla.
+    this.handle = cx.focus_handle();
     this.scroller = ScrollHandle.new(); // para que la opción marcada no se salga de la vista
     this.itemOf = [];
     this.step2 = null; // { p, space, tasks, loading, git, worktree }
@@ -30,11 +32,9 @@ export default class TableroIr extends View {
       } catch {}
       cx.notify();
     });
-    this.input = InputState.new({ placeholder: "Escribe un proyecto o una sesión…" });
-    this.input.on("change", (_e, cx) => { this.filter = this.input.value(); this.at = 0; cx.notify(); });
-    this.input.on("submit", (_e, cx) => this.pick(this.rows()[this.at], cx));
-    this.input.focus();
-    cx.timer.after(400, () => this.input.focus());
+    this.handle.focus();
+    cx.timer.after(150, () => this.handle.focus());
+    cx.timer.after(500, () => this.handle.focus());
   }
 
   close() { closeOverlay(props()?.overlay); }
@@ -72,7 +72,6 @@ export default class TableroIr extends View {
     const p = r.p, space = this.spaceFor(p);
     const busy = sessions().some((s) => s.space.id === space?.id);
     this.step2 = { p, space, tasks: null, loading: true, git: false, worktree: false };
-    this.input.set_value?.("");
     this.filter = ""; this.at = 0;
     cx.notify();
     cx.spawn(async (cx) => {
@@ -159,22 +158,29 @@ export default class TableroIr extends View {
     return v_flex().id("root").size_full().bg(t.popover)
       .track_focus(this.handle)
       .on_key_down((e, cx) => {
-        if (e.key === "escape") { if (s2) { this.step2 = null; this.filter = ""; this.input.set_value?.(""); } else this.close(); }
+        const m = e.modifiers ?? {};
+        if (e.key === "escape") { if (s2) { this.step2 = null; this.filter = ""; this.at = 0; } else this.close(); }
         else if (e.key === "down") this.at = (this.at + 1) % rows.length;
         else if (e.key === "up") this.at = (this.at + rows.length - 1) % rows.length;
-        else if (e.key === "tab" && s2?.git) s2.worktree = !s2.worktree;
+        else if (e.key === "enter") { this.pick(rows[this.at], cx); }
+        else if (e.key === "tab") { if (s2?.git) s2.worktree = !s2.worktree; }
+        else if (e.key === "backspace") { this.filter = m.platform || m.alt ? "" : this.filter.slice(0, -1); this.at = 0; }
+        else if (e.key_char && !m.platform && !m.control && e.key_char.length === 1 && e.key_char >= " ") { this.filter += e.key_char; this.at = 0; }
         else return;
         if (e.key === "down" || e.key === "up") this.scroller.scroll_to_item(this.itemOf[this.at] ?? 0);
         cx.stop_propagation(); cx.notify();
       })
       .when(!!s2, (el) => el.child(h_flex().px(14).py(8).gap(10).items_center().border_b(1).border_color(t.border)
         .child(div().id("back").text_size(12).text_color(t.dim).hover((s) => s.text_color(t.foreground))
-          .on_click((_e, cx) => { this.step2 = null; this.filter = ""; this.input.set_value?.(""); cx.notify(); }).child("← Esc"))
+          .on_click((_e, cx) => { this.step2 = null; this.filter = ""; this.at = 0; cx.notify(); }).child("← Esc"))
         .child(div().flex_1().text_size(14).font_semibold().text_color(t.foreground).child(s2.p.name))
         .when(s2.git, (el) => el.child(div().text_size(11).text_color(t.dim).child("Tab:"))
           .child(where(false, "Misma carpeta")).child(where(true, "Worktree nuevo")))))
-      .child(h_flex().h(44).px(14).items_center().border_b(1).border_color(t.border)
-        .child(Input.new(this.input).flex_1().h_full().text_size(14).text_color(t.foreground)))
+      .child(h_flex().h(44).px(14).gap(1).items_center().border_b(1).border_color(t.border).text_size(14)
+        .when(!this.filter, (el) => el.child(div().w(2).h(18).bg(t.accent).loop("opacity", { from: 0.2, to: 1, period: 1000 }))
+          .child(div().pl(4).text_color(t.dim).child(s2 ? "Filtra tareas…" : "Escribe un proyecto o una sesión…")))
+        .when(!!this.filter, (el) => el.child(div().text_color(t.foreground).child(this.filter))
+          .child(div().w(2).h(18).bg(t.accent).loop("opacity", { from: 0.2, to: 1, period: 1000 }))))
       .child(v_flex().id("list").h(420).pb(8).overflow_y_scrollbar().track_scroll(this.scroller)
         .when(!!s2?.loading, (el) => el.child(div().p(14).text_size(12).text_color(t.dim).child("Mirando tareas en Pulse…")))
         .when(!s2?.loading, (el) => el.children(items)))
