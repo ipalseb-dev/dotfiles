@@ -122,6 +122,9 @@ export default class Tablero extends View {
   }
 
   render(cx) {
+    // Oculto (dentro de una sesión) no pinta nada: Herdr re-renderiza todos los mods con cada
+    // cambio de título o estado de Claude, y pintar las tarjetas ahí hacía ir a tirones al escribir.
+    if (!visible()) return div().id("root").size_full();
     const t = theme();
     const mono = settings()?.font_family ?? "JetBrains Mono";
     const all = sessions();
