@@ -68,7 +68,7 @@ export default class TableroIr extends View {
     // Proyecto: mira si hay algo que preguntar antes de crear.
     const p = r.p, space = this.spaceFor(p);
     const busy = sessions().some((s) => s.space.id === space?.id);
-    this.step2 = { p, space, tasks: null, loading: true, git: false, worktree: busy };
+    this.step2 = { p, space, tasks: null, loading: true, git: false, worktree: false };
     this.input.set_value?.("");
     this.filter = ""; this.at = 0;
     cx.notify();
@@ -76,9 +76,9 @@ export default class TableroIr extends View {
       const [git, proj] = await Promise.all([isGit(p.folder), pulseProjectFor(p.folder).catch(() => null)]);
       let tasks = [];
       if (proj) tasks = await openTasks(proj.key).catch(() => []);
-      Object.assign(this.step2, { git, tasks, key: proj?.key, loading: false });
+      Object.assign(this.step2, { git: git && !p.pinned, tasks, key: proj?.key, loading: false });
       // Nada que elegir: ni tareas ni otra sesión en el repo → directo.
-      if (!tasks.length && !(busy && git)) { this.launch(this.step2, null); return; }
+      if (!tasks.length && !(busy && this.step2.git)) { this.launch(this.step2, null); return; }
       cx.notify();
     });
   }

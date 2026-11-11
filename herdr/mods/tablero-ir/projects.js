@@ -12,7 +12,7 @@ export async function loadProjects() {
   const r = await exec("ls", ["-1p", cfg.projectsDir]);
   const list = r.stdout.split("\n").filter((l) => l.endsWith("/")).map((l) => l.slice(0, -1))
     .map((d) => ({ name: d, dir: d, folder: `${cfg.projectsDir}/${d}` }));
-  return { pinned: cfg.pinned, list };
+  return { pinned: cfg.pinned.map((p) => ({ ...p, pinned: true })), list };
 }
 
 export async function named(list) {
