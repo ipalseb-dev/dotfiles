@@ -24,7 +24,7 @@ dotfiles/
 ├── git/.gitignore_global
 ├── herdr/
 │   ├── layouts/tablero.json
-│   ├── mods/tablero*/       # board, top bar, session sidebar, ⌘K picker, footer
+│   ├── mods/tablero*/       # board, session sidebar, ⌘K picker, footer
 │   ├── themes/kanagawa.json
 │   └── keys.json
 ├── nvim/init.lua

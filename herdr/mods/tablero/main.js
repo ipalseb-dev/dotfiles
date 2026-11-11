@@ -151,7 +151,6 @@ export default class Tablero extends View {
             .child(div().text_size(11).opacity(0.75).child("⌘K"))))
       .when(agents.length === 0, (el) => el.child(
         div().text_size(13).text_color(t.dim).child("No tienes ninguna sesión abierta. Pulsa ⌘K para abrir una en cualquier proyecto.")))
-      .children(rows.map((row, i) => h_flex().id(`row-${i}`).gap(14).children(row.map((s) => (s ? this.card(s, t, mono, agents.indexOf(s) + 1, agents) : this.addCard(t))))))
-      .child(hints(t, [["⌘º", "tablero"], ["⌘1…9", "ir a esa sesión"], ["⌃Tab", "siguiente sesión"], ["⌘J", "ir a la que te espera"], ["⌘K", "nueva sesión"]]));
+      .children(rows.map((row, i) => h_flex().id(`row-${i}`).gap(14).children(row.map((s) => (s ? this.card(s, t, mono, agents.indexOf(s) + 1, agents) : this.addCard(t))))));
   }
 }
