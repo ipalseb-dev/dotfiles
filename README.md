@@ -24,7 +24,7 @@ dotfiles/
 ├── git/.gitignore_global
 ├── herdr/
 │   ├── layouts/tablero.json
-│   ├── mods/tablero*/       # board, top bar, ⌘K picker, footer
+│   ├── mods/tablero*/       # board, top bar, session sidebar, ⌘K picker, footer
 │   ├── themes/kanagawa.json
 │   └── keys.json
 ├── nvim/init.lua
@@ -82,6 +82,7 @@ MIT
 A layout for [Herdr](https://herdr.dev) built for running several coding agents at once:
 
 - **Board**: every open session as an equal card with its state (waiting on you, working, done, idle), git branch, context usage and the last lines of its terminal. A warning shows when two sessions share a folder.
+- **Inside a session**: a sidebar lists every session with its state and title; `⌘B` folds it to a narrow rail.
 - **Moving around**: `⌘1–9` jumps to a session, `⌃Tab` cycles, `⌘J` goes to the next one waiting on you, `⌘0` back to the board.
 - **New session** (`⌘K`): pinned folders, then every folder in your projects dir. If the repo has tasks in a Pulse MCP server, pick one and Claude starts with it; if the repo already has a session, start the new one in its own git worktree.
 - **Footer**: Claude Code's status line (folder, branch, model, context, 5-hour quota) shown by Herdr instead of inside Claude.

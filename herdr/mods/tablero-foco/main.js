@@ -1,13 +1,20 @@
-// Barra fija del tablero: sesiones numeradas, volver al tablero, nueva sesión.
-// Recibe los atajos (⌘1–9, ⌃Tab, ⌘J) porque es lo único visible en las dos vistas.
+// Barra fija del tablero: volver al tablero, nueva sesión y atajos. Las sesiones se listan en las
+// tarjetas (tablero) y en la barra lateral (dentro de una sesión).
+// Recibe los atajos (⌘1–9, ⌃Tab, ⌘J, ⌘B) porque es lo único visible en las dos vistas.
 import { View, div } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { run, theme, focused, layout, nextCommand } from "herdr";
-import { numbered, open, color, label, askClose } from "./sessions.js";
+import { run, theme, focused, layout, nextCommand, shared, setShared } from "herdr";
+import { numbered, open } from "./sessions.js";
 
 const find = (n, id) => (n?.id === id ? n : (n?.children ?? []).map((c) => find(c, id)).find(Boolean) ?? null);
 const inBoard = () => (find(layout(), "vista")?.active ?? "grid") === "grid";
 const board = () => run("layout.select", { stack: "vista", child: "grid" });
+// ⌘B: pliega la barra lateral a riel (56 px) o la devuelve al ancho que tenía.
+function toggleSidebar() {
+  const w = find(layout(), "sidebar")?.size?.px ?? 260;
+  if (w >= 120) setShared("tablero.sidebar.width", w);
+  run("layout.resize", { id: "sidebar", px: w < 120 ? (shared("tablero.sidebar.width") ?? 260) : 56 });
+}
 const enter = (s) => { if (!s) return; open(s); run("layout.select", { stack: "vista", child: "foco" }); };
 
 export default class Barra extends View {
@@ -24,6 +31,7 @@ export default class Barra extends View {
           const order = [...list.slice(cur + 1), ...list.slice(0, cur + 1)];
           enter(order.find((s) => s.status === "blocked") ?? order.find((s) => s.status === "done"));
         } else if (c === "board") board();
+        else if (c === "sidebar") toggleSidebar();
         cx.notify();
       }
     });
@@ -32,8 +40,6 @@ export default class Barra extends View {
   render() {
     const t = theme();
     const onBoard = inBoard();
-    const cur = focused()?.tab;
-    const list = numbered();
     const key = (k) => div().px(5).rounded(4).bg(t.raised).text_size(10).text_color(t.dim).child(k);
     return h_flex()
       .id("root").size_full().bg(t.chrome).px(10).gap(6).items_center().overflow_hidden()
@@ -43,23 +49,6 @@ export default class Barra extends View {
           .hover((s) => s.bg(t.hover)).on_click(board)
           .child(div().text_size(12).text_color(t.foreground).child("⊞ Tablero"))
           .child(key("⌘º")))
-      .child(div().w(1).h(18).bg(t.border).flex_none())
-      .children(list.map((s, i) => {
-        const on = !onBoard && s.tab.id === cur;
-        const waiting = s.status === "blocked";
-        return h_flex().id(`p-${s.key}`).pl(6).pr(4).py(4).gap(6).items_center().rounded(6).flex_none()
-          .bg(on ? t.selected : t.chrome).border(1).border_color(on ? t.accent : waiting ? color(t, s.status) : t.border)
-          .hover((st) => st.bg(t.hover))
-          .on_click(() => enter(s))
-          .child(i < 9 ? key(`⌘${i + 1}`) : null)
-          .child(div().w(8).h(8).rounded(4).bg(color(t, s.status)))
-          .child(div().text_size(12).text_color(on ? t.foreground : t.muted).child(label(s)))
-          .child(div().id(`x-${s.key}`).px(4).rounded(4).text_size(11).text_color(t.dim)
-            .hover((st) => st.bg(t.raised).text_color(t.foreground))
-            .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-            .on_click((_e, cx) => { cx.stop_propagation(); askClose(s); })
-            .child("✕"));
-      }))
       .child(
         h_flex().id("plus").px(10).py(4).gap(6).items_center().rounded(6).flex_none()
           .hover((st) => st.bg(t.hover))
@@ -68,6 +57,8 @@ export default class Barra extends View {
           .child(key("⌘K")))
       .child(div().flex_1())
       .child(h_flex().gap(10).flex_none().text_size(11).text_color(t.dim)
+        .when(!onBoard, (el) => el.child(h_flex().gap(4).items_center().child(key("⌘B")).child("barra lateral")))
+        .child(h_flex().gap(4).items_center().child(key("⌘1…9")).child("ir a sesión"))
         .child(h_flex().gap(4).items_center().child(key("⌃Tab")).child("siguiente"))
         .child(h_flex().gap(4).items_center().child(key("⌘J")).child("la que te espera")));
   }

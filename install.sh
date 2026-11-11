@@ -61,7 +61,7 @@ backup_and_link "$DOTFILES/vscode/settings.json" "$VSCODE_DIR/settings.json"
 info "Setting up Herdr board..."
 HERDR_DIR="$HOME/.config/herdr-app"
 mkdir -p "$HERDR_DIR/mods" "$HERDR_DIR/layouts" "$HERDR_DIR/themes"
-for mod in tablero tablero-foco tablero-ir tablero-pie; do
+for mod in tablero tablero-foco tablero-ir tablero-lateral tablero-pie; do
   backup_and_link "$DOTFILES/herdr/mods/$mod" "$HERDR_DIR/mods/$mod"
 done
 backup_and_link "$DOTFILES/herdr/layouts/tablero.json" "$HERDR_DIR/layouts/tablero.json"

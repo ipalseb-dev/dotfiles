@@ -92,6 +92,7 @@
     "cmd-ª": "tablero-foco.board",
     "cmd-`": "tablero-foco.board",
     "cmd-<": "tablero-foco.board",
-    "cmd-§": "tablero-foco.board"
+    "cmd-§": "tablero-foco.board",
+    "cmd-b": "tablero-foco.sidebar"
   }
 }
