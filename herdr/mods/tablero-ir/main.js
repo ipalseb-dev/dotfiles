@@ -1,7 +1,7 @@
 // ⌘K: ir a una sesión abierta o abrir una nueva.
 // Paso 1: sesión abierta o carpeta. Paso 2 (solo si aporta): tarea de Pulse y dónde (misma carpeta / worktree).
 import { View, div } from "gpui-kit";
-import { v_flex, h_flex, InputState, Input } from "gpui-base";
+import { v_flex, h_flex, InputState, Input, ScrollHandle } from "gpui-base";
 import { run, theme, spaces, props, closeOverlay, pickFolder, notify } from "herdr";
 import { sessions, open, color, label, LABEL } from "./sessions.js";
 import { loadProjects, named, sorted } from "./projects.js";
@@ -16,6 +16,9 @@ export default class TableroIr extends View {
   init(_props, cx) {
     this.filter = "";
     this.at = 0;
+    this.handle = cx.focus_handle();   // las flechas y Tab llegan al contenedor aunque escribas en el campo
+    this.scroller = ScrollHandle.new(); // para que la opción marcada no se salga de la vista
+    this.itemOf = [];
     this.step2 = null; // { p, space, tasks, loading, git, worktree }
     this.projects = [];
     cx.spawn(async (cx) => {
@@ -124,6 +127,7 @@ export default class TableroIr extends View {
         items.push(section(titles[kind]));
         last = kind;
       }
+      this.itemOf[i] = items.length;
       const sel = i === this.at;
       const row = h_flex().id(`r-${i}`).mx(6).px(10).py(7).gap(10).items_center().rounded(6)
         .bg(sel ? t.selected : t.popover).hover((s) => s.bg(t.hover))
@@ -153,12 +157,14 @@ export default class TableroIr extends View {
       .on_click((_e, cx) => { s2.worktree = wt; cx.notify(); }).child(txt);
 
     return v_flex().id("root").size_full().bg(t.popover)
+      .track_focus(this.handle)
       .on_key_down((e, cx) => {
         if (e.key === "escape") { if (s2) { this.step2 = null; this.filter = ""; this.input.set_value?.(""); } else this.close(); }
         else if (e.key === "down") this.at = (this.at + 1) % rows.length;
         else if (e.key === "up") this.at = (this.at + rows.length - 1) % rows.length;
         else if (e.key === "tab" && s2?.git) s2.worktree = !s2.worktree;
         else return;
+        if (e.key === "down" || e.key === "up") this.scroller.scroll_to_item(this.itemOf[this.at] ?? 0);
         cx.stop_propagation(); cx.notify();
       })
       .when(!!s2, (el) => el.child(h_flex().px(14).py(8).gap(10).items_center().border_b(1).border_color(t.border)
@@ -169,7 +175,7 @@ export default class TableroIr extends View {
           .child(where(false, "Misma carpeta")).child(where(true, "Worktree nuevo")))))
       .child(h_flex().h(44).px(14).items_center().border_b(1).border_color(t.border)
         .child(Input.new(this.input).flex_1().h_full().text_size(14).text_color(t.foreground)))
-      .child(v_flex().id("list").h(420).pb(8).overflow_y_scrollbar()
+      .child(v_flex().id("list").h(420).pb(8).overflow_y_scrollbar().track_scroll(this.scroller)
         .when(!!s2?.loading, (el) => el.child(div().p(14).text_size(12).text_color(t.dim).child("Mirando tareas en Pulse…")))
         .when(!s2?.loading, (el) => el.children(items)))
       .child(h_flex().px(14).py(8).gap(14).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)

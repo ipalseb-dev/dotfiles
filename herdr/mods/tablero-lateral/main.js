@@ -19,16 +19,17 @@ export default class Lateral extends View {
       .on_click(() => run("tablero-pie.sidebar", {}))
       .child(rail ? "›" : "‹");
 
-    const icon = (id, txt, tip, fn) => h_flex().id(id).h(24).px(6).rounded(6).items_center().justify_center().flex_none()
-      .text_size(12).text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(fn).child(txt);
+    const icon = (id, txt, key, fn) => h_flex().id(id).h(24).px(6).gap(5).rounded(6).items_center().justify_center().flex_none()
+      .text_size(12).text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(fn).child(txt)
+      .when(!!key, (el) => el.child(div().px(4).rounded(4).bg(t.raised).text_size(10).text_color(t.dim).child(key)));
     const toBoard = () => run("layout.select", { stack: "vista", child: "grid" });
     const nueva = () => run("mod.open", { name: "tablero-ir" });
 
     if (rail) {
       return v_flex().id("root").size_full().bg(t.chrome).py(8).gap(6).items_center().overflow_hidden()
         .child(toggle)
-        .child(icon("b", "⊞", "Tablero", toBoard))
-        .child(icon("n", "＋", "Nueva", nueva))
+        .child(icon("b", "⊞", "", toBoard))
+        .child(icon("n", "＋", "", nueva))
         .children(list.map((s, i) => {
           const on = s.tab.id === cur;
           return v_flex().id(`r-${s.key}`).w(40).py(6).gap(4).items_center().rounded(8)
@@ -42,8 +43,8 @@ export default class Lateral extends View {
 
     return v_flex().id("root").size_full().bg(t.chrome).px(8).py(8).gap(4).overflow_y_scrollbar()
       .child(h_flex().px(2).pb(4).gap(2).items_center()
-        .child(icon("b", "⊞ Tablero", "", toBoard))
-        .child(icon("n", "＋ Nueva", "", nueva))
+        .child(icon("b", "⊞ Tablero", "⌘0", toBoard))
+        .child(icon("n", "＋ Nueva", "⌘K", nueva))
         .child(div().flex_1())
         .child(toggle))
       .child(div().px(4).pb(4).text_size(11).font_semibold().text_color(t.dim).child(`SESIONES · ${list.length}`))
